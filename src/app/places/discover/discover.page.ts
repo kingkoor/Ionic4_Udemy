@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { PlacesService } from '../places.service';
+// import { MenuController } from '@ionic/angular';
 import { Place } from '../place.model';
 
 @Component({
@@ -14,5 +15,8 @@ export class DiscoverPage implements OnInit {
   ngOnInit() {
     this.loadedPlaces = this.placesService.places;
   }
+  // onOpenMenu() {
+  //   this.menuCtrl.toggle();
+  // }
 
 }
