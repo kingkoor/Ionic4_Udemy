@@ -10,9 +10,9 @@ import { Router } from '@angular/router';
   styleUrls: ['./offers.page.scss'],
 })
 export class OffersPage implements OnInit {
-
   offers: Place[];
-  constructor(private placesService: PlacesService, private router: Router) { }
+
+  constructor(private placesService: PlacesService, private router: Router) {}
 
   ngOnInit() {
     this.offers = this.placesService.places;
