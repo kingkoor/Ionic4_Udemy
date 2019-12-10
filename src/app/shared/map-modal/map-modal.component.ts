@@ -58,6 +58,7 @@ export class MapModalComponent implements OnInit, AfterViewInit, OnDestroy {
         } else {
           const marker = new googleMaps.Marker({
             position: this.center,
+            // tslint:disable-next-line: object-literal-shorthand
             map: map,
             title: 'Picked Location'
           });
