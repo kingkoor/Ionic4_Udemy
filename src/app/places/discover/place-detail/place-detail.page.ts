@@ -8,6 +8,7 @@ import {
   AlertController
 } from '@ionic/angular';
 import { Subscription } from 'rxjs';
+import { switchMap } from 'rxjs/operators';
 
 import { PlacesService } from '../../places.service';
 import { Place } from '../../place.model';
@@ -47,12 +48,21 @@ export class PlaceDetailPage implements OnInit, OnDestroy {
         return;
       }
       this.isLoading = true;
-      this.placeSub = this.placesService
-        .getPlace(paramMap.get('placeId'))
+      let fetchedUserId: string;
+      this.authService.userId
+        .pipe(
+          switchMap(userId => {
+            if (!userId) {
+              throw new Error('Found no user!');
+            }
+            fetchedUserId = userId;
+            return this.placesService.getPlace(paramMap.get('placeId'));
+          })
+        )
         .subscribe(
           place => {
             this.place = place;
-            this.isBookable = place.userId !== this.authService.userId;
+            this.isBookable = place.userId !== fetchedUserId;
             this.isLoading = false;
           },
           error => {
@@ -142,6 +152,7 @@ export class PlaceDetailPage implements OnInit, OnDestroy {
         }
       });
   }
+
   onShowFullMap() {
     this.modalCtrl
       .create({
@@ -160,6 +171,7 @@ export class PlaceDetailPage implements OnInit, OnDestroy {
         modalEl.present();
       });
   }
+
   ngOnDestroy() {
     if (this.placeSub) {
       this.placeSub.unsubscribe();

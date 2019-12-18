@@ -55,7 +55,6 @@ interface PlaceData {
   providedIn: 'root'
 })
 export class PlacesService {
-  // tslint:disable-next-line: variable-name
   private _places = new BehaviorSubject<Place[]>([]);
 
   get places() {
@@ -119,11 +118,12 @@ export class PlacesService {
         })
       );
   }
+
   uploadImage(image: File) {
     const uploadData = new FormData();
     uploadData.append('image', image);
 
-    return this.http.post<{imageUrl: string, imagePath: string}>(
+    return this.http.post<{ imageUrl: string; imagePath: string }>(
       'https://us-central1-ionic-angular-course-8bb45.cloudfunctions.net/storeImage',
       uploadData
     );
@@ -139,36 +139,42 @@ export class PlacesService {
     imageUrl: string
   ) {
     let generatedId: string;
-    const newPlace = new Place(
-      Math.random().toString(),
-      title,
-      description,
-      imageUrl,
-      price,
-      dateFrom,
-      dateTo,
-      this.authService.userId,
-      location
-    );
-    return this.http
-      .post<{ name: string }>(
-        'https://ionic-angular-course-8bb45.firebaseio.com/offered-places.json',
-        {
-          ...newPlace,
-          id: null
+    let newPlace: Place;
+    return this.authService.userId.pipe(
+      take(1),
+      switchMap(userId => {
+        if (!userId) {
+          throw new Error('No user found!');
         }
-      )
-      .pipe(
-        switchMap(resData => {
-          generatedId = resData.name;
-          return this.places;
-        }),
-        take(1),
-        tap(places => {
-          newPlace.id = generatedId;
-          this._places.next(places.concat(newPlace));
-        })
-      );
+        newPlace = new Place(
+          Math.random().toString(),
+          title,
+          description,
+          imageUrl,
+          price,
+          dateFrom,
+          dateTo,
+          userId,
+          location
+        );
+        return this.http.post<{ name: string }>(
+          'https://ionic-angular-course-8bb45.firebaseio.com/offered-places.json',
+          {
+            ...newPlace,
+            id: null
+          }
+        );
+      }),
+      switchMap(resData => {
+        generatedId = resData.name;
+        return this.places;
+      }),
+      take(1),
+      tap(places => {
+        newPlace.id = generatedId;
+        this._places.next(places.concat(newPlace));
+      })
+    );
     // return this.places.pipe(
     //   take(1),
     //   delay(1000),
